@@ -5,6 +5,6 @@ export const serverError = (err, req, res, next) => {
 };
 export const routesError = (req, res, next) => {
   next({
-    message: `Invalid method/URL ${req.method}/${req.path} `,
+    message: `Invalid method/URL ${req.method}${req.path} `,
   });
 };
