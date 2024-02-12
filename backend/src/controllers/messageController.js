@@ -33,6 +33,24 @@ class MessageController {
       });
     }
   };
+  getMessages = async (req, res, next) => {
+    try {
+      const { id: chatId } = req.params;
+      const senderId = req.user._id;
+      const conversation = await Conversation.findOne({
+        participants: { $all: [senderId, chatId] },
+      }).populate("messages");
+      if (!conversation) return res.status(404).json([]);
+      const messages = conversation.messages;
+      res.status(200).json(messages);
+    } catch (error) {
+      console.log(error);
+      next({
+        message: "Unable to show message at this moment.",
+        status: 500,
+      });
+    }
+  };
 }
 
 export default new MessageController();

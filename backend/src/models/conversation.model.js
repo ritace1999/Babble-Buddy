@@ -22,5 +22,5 @@ const ConvoSchema = new Schema(
   }
 );
 
-const Conversation = model("conversations", ConvoSchema);
+const Conversation = model("Conversation", ConvoSchema);
 export default Conversation;

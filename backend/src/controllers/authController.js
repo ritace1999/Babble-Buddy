@@ -5,8 +5,8 @@ import { generateTokenAndCookie } from "../utils/generateToken&Cookie.js";
 class AuthController {
   signIn = async (req, res, next) => {
     try {
-      const { userName, password } = req.body;
-      const user = await User.findOne({ userName });
+      const { email, password } = req.body;
+      const user = await User.findOne({ email });
       if (!user) {
         return res.status(404).json({ message: "User does not exist." });
       }
@@ -19,7 +19,7 @@ class AuthController {
       return res.status(200).json({
         _id: user._id,
         fullName: user.fullName,
-        userName: user.userName,
+        userName: user.email,
         gender: user.gender,
         avatar: user.avatar,
       });
@@ -33,19 +33,25 @@ class AuthController {
   };
   signUp = async (req, res, next) => {
     try {
-      const { fullName, userName, password, gender } = req.body;
-      const user = await User.findOne({ userName });
+      const { fullName, email, userName, password, gender } = req.body;
+      const user = await User.findOne({ email });
+      const uniqueName = await User.findOne({ userName });
       if (user) {
         return res.status(400).json({ message: "User arleady exists." });
       }
+      if (uniqueName) {
+        return res.status(400).json({ message: "Username already taken." });
+      }
+
       const hashedPassword = await bcrypt.hash(password, 10);
       const boyAvatar = `https://avatar.iran.liara.run/public/boy?username=${userName}`;
       const girlAvatar = `https://avatar.iran.liara.run/public/girl?username=${userName}`;
       const newUser = new User({
         fullName,
-        userName,
+        email,
         password: hashedPassword,
         gender,
+        userName,
         avatar: gender == "Male" ? boyAvatar : girlAvatar,
       });
       generateTokenAndCookie(newUser._id, res);
@@ -54,6 +60,7 @@ class AuthController {
       res.status(201).json({
         _id: newUser._id,
         fullName: newUser.fullName,
+        email: newUser.email,
         userName: newUser.userName,
         gender: newUser.gender,
         avatar: newUser.avatar,
