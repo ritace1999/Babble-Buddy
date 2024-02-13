@@ -5,8 +5,9 @@ import { generateTokenAndCookie } from "../utils/generateToken&Cookie.js";
 class AuthController {
   signIn = async (req, res, next) => {
     try {
-      const { email, password } = req.body;
-      const user = await User.findOne({ email });
+      const { email, userName, password } = req.body;
+      const user = await User.findOne({ $or: [{ email }, { userName }] });
+
       if (!user) {
         return res.status(404).json({ message: "User does not exist." });
       }
@@ -19,7 +20,8 @@ class AuthController {
       return res.status(200).json({
         _id: user._id,
         fullName: user.fullName,
-        userName: user.email,
+        email: user.email,
+        userName: user.userName,
         gender: user.gender,
         avatar: user.avatar,
       });
