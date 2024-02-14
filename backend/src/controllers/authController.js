@@ -5,12 +5,15 @@ import { generateTokenAndCookie } from "../utils/generateToken&Cookie.js";
 class AuthController {
   signIn = async (req, res, next) => {
     try {
-      const { email, userName, password } = req.body;
-      const user = await User.findOne({ $or: [{ email }, { userName }] });
+      const { identifier, password } = req.body;
+      const user = await User.findOne({
+        $or: [{ email: identifier }, { userName: identifier }],
+      });
 
       if (!user) {
         return res.status(404).json({ message: "User does not exist." });
       }
+
       const isPasswordValid = await bcrypt.compare(password, user.password);
       if (!isPasswordValid) {
         return res.status(401).json({ message: "Password invalid." });
@@ -33,6 +36,7 @@ class AuthController {
       });
     }
   };
+
   signUp = async (req, res, next) => {
     try {
       const { fullName, email, userName, password, gender } = req.body;

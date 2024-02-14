@@ -1,58 +1,88 @@
 "use client";
 import Layout from "@/components/auth/AuthComponent";
 import { IoFingerPrint } from "react-icons/io5";
-import { CiUser } from "react-icons/ci";
 import React, { useState } from "react";
 import Button from "@/components/button/Button";
 import Link from "next/link";
+import { MdAlternateEmail } from "react-icons/md";
+import { useMutation } from "@tanstack/react-query";
+import { signInUser } from "@/services/user";
+import toast from "react-hot-toast";
+import { useRouter } from "next/navigation";
+import { signInValidation } from "@/utils/authValidation";
 
-const page = () => {
+const SignInPage = () => {
   const [showPassword, setShowPassword] = useState(false);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const loginSubmitHandler = (e) => {
+  const [inputs, setInputs] = useState({ identifier: "", password: "" });
+  const [errors, setErrors] = useState({});
+  const router = useRouter();
+
+  const { mutate, isLoading } = useMutation(
+    (formData) => signInUser(formData),
+    {
+      onError: (error) => {
+        toast.error(error.message);
+      },
+      onSuccess: (data) => {
+        localStorage.setItem("account", JSON.stringify(data));
+        toast.success("Login successful");
+        router.push("/");
+      },
+    }
+  );
+
+  const signInSubmitHandler = async (e) => {
     e.preventDefault();
+    const validationErrors = signInValidation(inputs);
+    setErrors(validationErrors);
+
+    // Check if there are any validation errors
+    if (Object.keys(validationErrors).length > 0) {
+      // If there are errors, display the first error encountered
+      const errorMessage = Object.values(validationErrors)[0]; // Get the first error message
+      toast.error(errorMessage);
+      return;
+    }
+    await mutate(inputs);
   };
+
   return (
     <Layout>
-      <h1 className=" font-extrabold text-2xl">Sign In</h1>
+      <h1 className="font-extrabold text-2xl">Sign In</h1>
       <form
         className="flex flex-col w-full gap-y-6 justify-center items-center my-10"
-        onSubmit={loginSubmitHandler}
+        onSubmit={signInSubmitHandler}
       >
-        <div className="flex flex-row  rounded-lg justify-center items-center bg-white ">
+        <div className="flex flex-row rounded-lg justify-center items-center bg-white ">
           <input
             type="text"
-            onChange={(e) => setEmail(e.target.value)}
-            value={email}
-            placeholder="Email / Username "
+            onChange={(e) =>
+              setInputs({ ...inputs, identifier: e.target.value })
+            }
+            value={inputs.identifier}
+            placeholder="Email / Username"
             className="border-none outline-none bg-white rounded-lg text-slate-800 py-2 px-5 md:w-[300px]"
           />
-          <CiUser className="bg-white text-slate-800 mr-2 text-2xl" />
+          <MdAlternateEmail className="bg-white text-slate-800 mr-2 text-2xl" />
         </div>
-        <div className="flex flex-row  rounded-lg justify-center items-center bg-white ">
+        <div className="flex flex-row rounded-lg justify-center items-center bg-white ">
           <input
-            onChange={(e) => setPassword(e.target.value)}
-            value={password}
+            onChange={(e) => setInputs({ ...inputs, password: e.target.value })}
+            value={inputs.password}
             type={showPassword ? "text" : "password"}
             placeholder="Password"
             className="border-none outline-none bg-white rounded-lg text-slate-800 py-2 px-5 md:w-[300px]"
           />
           <IoFingerPrint
-            className="bg-white text-slate-800 mr-2 text-2xl cursor-pointer"
+            className="bg-white text-slate-800 mr-2 text-2xl cursor-pointer hover:opacity-85"
             onClick={() => setShowPassword(!showPassword)}
           />
         </div>
-        <div className="flex flex-row  gap-x-2 mr-[120px] md:mr-[200px] ">
-          <input
-            type="checkbox"
-            className="border-none outline-none bg-white rounded-lg text-slate-800 w-4  "
-          />
-          <p>Remember Me</p>
-        </div>
 
-        <Button type="submit">Sign In</Button>
-        <p>
+        <Button type="submit" disabled={isLoading}>
+          {isLoading ? "Signing In..." : "Sign In"}
+        </Button>
+        <p className="text-white">
           Do not have an account?{" "}
           <span className="text-blue-500 cursor-pointer">
             <Link href="/signup">Sign Up</Link>
@@ -63,4 +93,4 @@ const page = () => {
   );
 };
 
-export default page;
+export default SignInPage;
