@@ -12,6 +12,7 @@ import { signUpUser } from "@/services/user";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { signUpValidation } from "@/utils/authValidation";
+import GenderCheckbox from "@components/GenderCheckBox";
 
 const page = () => {
   const [showPassword, setShowPassword] = useState({
@@ -24,8 +25,9 @@ const page = () => {
     userName: "",
     password: "",
     confirmPassword: "",
+    gender: "",
   });
-  const [errors, setErrors] = useState({});
+
   const router = useRouter();
   const { mutate, isLoading } = useMutation(
     (formData) => signUpUser(formData),
@@ -34,7 +36,6 @@ const page = () => {
         toast.error(error.message);
       },
       onSuccess: (data) => {
-        localStorage.setItem("account", JSON.stringify(data));
         toast.success("Register successful");
         router.push("/signin");
       },
@@ -43,7 +44,6 @@ const page = () => {
   const signUpSubmitHandler = async (e) => {
     e.preventDefault();
     const validationErrors = signUpValidation(inputs);
-    setErrors(validationErrors);
 
     // Check if there are any validation errors
     if (Object.keys(validationErrors).length > 0) {
@@ -54,13 +54,16 @@ const page = () => {
     }
 
     const { confirmPassword, ...formData } = inputs;
-    await mutate(formData);
+    mutate(formData);
+  };
+  const handleCheckboxChange = (gender) => {
+    setInputs({ ...inputs, gender });
   };
   return (
     <Layout>
       <h1 className=" text-white font-extrabold text-2xl">Sign Up</h1>
       <form
-        className="flex flex-col w-full gap-y-[27px] justify-center items-center my-8 "
+        className="flex flex-col w-full gap-y-[22px] justify-center items-center my-8 "
         onSubmit={signUpSubmitHandler}
       >
         <div className="flex flex-row  rounded-lg justify-center items-center bg-white ">
@@ -131,17 +134,25 @@ const page = () => {
             }
           />
         </div>
+        <div className="mr-20">
+          <GenderCheckbox
+            onCheckboxChange={handleCheckboxChange}
+            selectedGender={inputs.gender}
+          />
+        </div>
 
         <Button type="submit" disabled={isLoading}>
           {isLoading ? "Signing Up..." : "Sign Up"}
         </Button>
+      </form>
+      <div className="mt-[-20px]">
         <p className="text-white">
           Already have an account?{" "}
-          <span className="text-blue-500 cursor-pointer">
+          <span className="text-blue-500 cursor-pointer ">
             <Link href="/signin">Sign In</Link>
           </span>
         </p>
-      </form>
+      </div>
     </Layout>
   );
 };

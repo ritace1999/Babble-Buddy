@@ -5,5 +5,6 @@ import userController from "../../controllers/userController.js";
 const router = express.Router();
 
 router.get("/", authCheck, userController.getUser);
+router.post("/", authCheck, userController.readUserPagination);
 
 export default router;

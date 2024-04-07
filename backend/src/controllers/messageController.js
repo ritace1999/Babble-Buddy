@@ -1,5 +1,6 @@
 import Conversation from "../models/conversation.model.js";
 import Message from "../models/message.model.js";
+import User from "../models/user.model.js";
 
 class MessageController {
   send = async (req, res, next) => {
@@ -7,6 +8,11 @@ class MessageController {
       const { id: receiverId } = req.params;
       const { message } = req.body;
       const senderId = req.user._id;
+      const receiver = await User.findById(receiverId);
+      if (!receiver) {
+        return res.status(404).json({ message: "User not found." });
+      }
+
       let conversation = await Conversation.findOne({
         participants: { $all: [senderId, receiverId] },
       });
@@ -15,11 +21,14 @@ class MessageController {
           participants: [senderId, receiverId],
         });
       }
+
       const newMessage = new Message({
         senderId,
+        receiverFullName: receiver.fullName,
         receiverId,
         message,
       });
+
       if (newMessage) {
         conversation.messages.push(newMessage._id);
       }
@@ -27,12 +36,14 @@ class MessageController {
       await Promise.all([conversation.save(), newMessage.save()]);
       res.status(201).json(newMessage);
     } catch (error) {
+      console.log(error);
       next({
         message: "Unable to create message at this moment.",
         status: 500,
       });
     }
   };
+
   getMessages = async (req, res, next) => {
     try {
       const { id: chatId } = req.params;

@@ -8,6 +8,6 @@ router.get("/", authCheck, profileController.read);
 router.put("/edit", authCheck, profileController.update);
 router.put("/edit-password", authCheck, profileController.passwordUpdate);
 router.put("/edit-avatar", authCheck, profileController.updateAvatar);
-router.delete("/edit-avatar/:id", authCheck, profileController.deleteAvatar);
+router.delete("/edit-avatar", authCheck, profileController.deleteAvatar);
 
 export default router;

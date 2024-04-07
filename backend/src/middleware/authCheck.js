@@ -2,25 +2,33 @@ import jwt from "jsonwebtoken";
 import User from "../models/user.model.js";
 
 export const authCheck = async (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith("Bearer")) {
+    const err = new Error(" Token missing");
+    err.status = 401;
+    return next(err);
+  }
+
   try {
-    const token = req.cookies.jwt;
-    if (!token) {
-      return res.status(401).json({ message: "Access denied. " });
-    }
-    const decoded = jwt.verify(token, process.env.SECRET_KEY);
-    if (!decoded) {
-      return res.status(401).json({ message: "Invalid Token." });
-    }
-    const user = await User.findById(decoded.userId).select("-password");
+    const token = authHeader.split(" ")[1];
+
+    const { userId } = jwt.verify(token, process.env.SECRET_KEY);
+
+    const user = await User.findById(userId).select("-password");
+
     if (!user) {
-      return res.status(404).json({ message: "User not found." });
+      const err = new Error("User not found");
+      err.status = 404;
+      return next(err);
     }
     req.user = user;
     next();
   } catch (error) {
-    next({
-      message: "Unable to preocess request this moment.",
-      status: 500,
-    });
+    if (error.name === "TokenExpiredError") {
+      error.message = "Token has expired";
+    } else if (error.name === "JsonWebTokenError") {
+      error.message = "Invalid token";
+    }
+    next(error);
   }
 };

@@ -6,7 +6,7 @@ import bcrypt from "bcrypt";
 class ProfileController {
   read = async (req, res, next) => {
     try {
-      const user = await User.findById(req.user._id);
+      const user = await User.findById(req.user._id).select("-password");
       if (!user) return res.status(404).json({ message: "User not found" });
       res.json(user);
     } catch (error) {
@@ -19,35 +19,35 @@ class ProfileController {
 
   update = async (req, res, next) => {
     try {
-      const { fullName, userName } = req.body;
+      const { fullName, userName, gender } = req.body;
       const userId = req.user._id;
 
       // Find the user by ID
       const user = await User.findById(userId);
-
       if (!user) {
-        return next({
-          message: "User not found",
-          status: 404,
-        });
+        return next({ message: "User not found", status: 404 });
       }
 
       // Check if there are any changes
       const changes = {};
-      if (fullName && fullName !== user.fullName) {
+      if (
+        fullName &&
+        JSON.stringify(fullName) !== JSON.stringify(user.fullName)
+      ) {
         changes.fullName = fullName;
       }
-
-      if (userName && userName !== user.userName) {
+      if (
+        userName &&
+        JSON.stringify(userName) !== JSON.stringify(user.userName)
+      ) {
         changes.userName = userName;
+      }
+      if (gender && JSON.stringify(gender) !== JSON.stringify(user.gender)) {
+        changes.gender = gender;
       }
 
       if (Object.keys(changes).length === 0) {
-        // No changes, respond with an error message
-        return next({
-          message: "No changes made to the profile",
-          status: 400,
-        });
+        return next({ message: "No changes made to the profile", status: 400 });
       }
 
       // Apply changes and save the updated user document
@@ -56,70 +56,58 @@ class ProfileController {
 
       // Fetch the updated user to include in the response
       const updatedUser = await User.findById(userId);
-
       res.json({
         _id: updatedUser._id,
         fullName: updatedUser.fullName,
         email: updatedUser.email,
         userName: updatedUser.userName,
         avatar: updatedUser.avatar,
+        gender: updatedUser.gender,
         message: "Profile updated successfully",
       });
     } catch (error) {
-      next({
-        message: "Unable to update profile at this moment",
-        status: 500,
-      });
+      next({ message: "Unable to update profile at this moment", status: 500 });
     }
   };
 
   passwordUpdate = async (req, res, next) => {
     try {
-      const { opassword, password } = req.body;
+      const { oldPassword, newPassword } = req.body;
       const userId = req.user._id;
 
       // Validate input fields
-      if (!opassword || !password) {
+      if (!oldPassword || !newPassword) {
         return res
           .status(400)
-          .json({ message: "Both password are required to update" });
+          .json({ message: "Both passwords are required to update" });
       }
 
       const user = await User.findById(userId);
-
       if (!user) {
+        return next({ message: "User not found", status: 404 });
+      }
+
+      const passwordMatch = await bcrypt.compare(oldPassword, user.password);
+      if (!passwordMatch) {
+        return next({ message: "Incorrect Old Password", status: 401 });
+      }
+
+      // Check if new password is same as old password
+      const newPasswordMatchesOld = await bcrypt.compare(
+        newPassword,
+        user.password
+      );
+      if (newPasswordMatchesOld) {
         return next({
-          message: "User not found",
-          status: 404,
+          message: "New password cannot be the same as the old password",
+          status: 422,
         });
       }
 
-      const passwordMatch = await bcrypt.compare(opassword, user.password);
+      const hash = await bcrypt.hash(newPassword, 10);
+      await user.updateOne({ password: hash });
 
-      if (passwordMatch) {
-        // Check if new password is same as old password
-        const newPasswordMatchesOld = await bcrypt.compare(
-          password,
-          user.password
-        );
-        if (newPasswordMatchesOld) {
-          return next({
-            message: "New password cannot be the same as the old password",
-            status: 422,
-          });
-        }
-
-        const hash = await bcrypt.hash(password, 10);
-        await user.updateOne({ password: hash });
-        return res.json({
-          message: "Password changed successfully.",
-        });
-      } else {
-        return next({
-          message: "Incorrect Old Password",
-          status: 401,
-        });
-      }
+      return res.json({ message: "Password changed successfully." });
     } catch (err) {
       return next({
         message: err.message || "An error occurred while changing password",
@@ -135,7 +123,6 @@ class ProfileController {
         if (err) {
           // Handle the upload error
           const error = new Error("An unknown error occurred when uploading");
-          console.log(err);
           next(error);
         } else {
           if (req.file) {
@@ -175,40 +162,40 @@ class ProfileController {
     } catch (error) {
       // Handle any other errors
       next({
-        msg: "Unable to update profile Picture",
+        message: "Unable to update profile Picture",
         status: 500,
       });
     }
   };
   deleteAvatar = async (req, res, next) => {
     try {
+      const { _id, avatar } = req.user;
+
       // Check if the user has an avatar before attempting to remove it
-      if (!req.user.avatar) {
-        throw new Error("No avatar found for deletion");
+      if (!avatar) {
+        return res
+          .status(404)
+          .json({ message: "No avatar found for deletion" });
       }
 
       // Remove the avatar file from disk
-      fileRemover(req.user.avatar);
+      await fileRemover(avatar);
 
-      // Set the avatar field to undefined in the database
+      // Set the avatar field to an empty string in the database
       const updatedUser = await User.findByIdAndUpdate(
-        req.user._id,
-        { $unset: { avatar: 1 } },
+        _id,
+        { avatar: "" },
         { new: true }
       );
 
       if (!updatedUser) {
-        return res.status(404).json({ msg: "User not found" });
+        return res.status(404).json({ message: "User not found" });
       }
 
-      res.json({ msg: "Avatar deleted successfully" });
+      res.json({ message: "Avatar deleted successfully" });
     } catch (error) {
-      if (error.message === "No avatar found for deletion") {
-        return res.status(404).json({ msg: "No avatar found for deletion" });
-      }
-
       next({
-        msg: "Unable to fulfill the request at this moment",
+        message: "Unable to fulfill the request at this moment",
         status: 500,
       });
     }

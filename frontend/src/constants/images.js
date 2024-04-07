@@ -1,5 +1,5 @@
-import background from "../../public/assets/background.jpg";
+import Avatar from "../public/assets/AVATAR.png";
 const images = {
-  background,
+  Avatar,
 };
 export default images;

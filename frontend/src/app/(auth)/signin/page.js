@@ -1,7 +1,7 @@
 "use client";
 import Layout from "@/components/auth/AuthComponent";
 import { IoFingerPrint } from "react-icons/io5";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Button from "@/components/button/Button";
 import Link from "next/link";
 import { MdAlternateEmail } from "react-icons/md";
@@ -10,12 +10,15 @@ import { signInUser } from "@/services/user";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import { signInValidation } from "@/utils/authValidation";
+import { useSelector, useDispatch } from "react-redux";
+import { userActions } from "@/store/reducers/userReducer";
 
 const SignInPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [inputs, setInputs] = useState({ identifier: "", password: "" });
   const [errors, setErrors] = useState({});
   const router = useRouter();
+  const dispatch = useDispatch();
 
   const { mutate, isLoading } = useMutation(
     (formData) => signInUser(formData),
@@ -25,7 +28,8 @@ const SignInPage = () => {
       },
       onSuccess: (data) => {
         localStorage.setItem("account", JSON.stringify(data));
-        toast.success("Login successful");
+        dispatch(userActions.setUserInfo(data));
+        toast.success("Sign in successful.");
         router.push("/");
       },
     }
@@ -36,10 +40,8 @@ const SignInPage = () => {
     const validationErrors = signInValidation(inputs);
     setErrors(validationErrors);
 
-    // Check if there are any validation errors
     if (Object.keys(validationErrors).length > 0) {
-      // If there are errors, display the first error encountered
-      const errorMessage = Object.values(validationErrors)[0]; // Get the first error message
+      const errorMessage = Object.values(validationErrors)[0];
       toast.error(errorMessage);
       return;
     }
@@ -48,7 +50,7 @@ const SignInPage = () => {
 
   return (
     <Layout>
-      <h1 className="font-extrabold text-2xl">Sign In</h1>
+      <h1 className="font-extrabold text-white text-2xl">Sign In</h1>
       <form
         className="flex flex-col w-full gap-y-6 justify-center items-center my-10"
         onSubmit={signInSubmitHandler}

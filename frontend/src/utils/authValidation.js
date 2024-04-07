@@ -52,3 +52,26 @@ export const signUpValidation = (values) => {
 
   return errors;
 };
+
+export const updatePasswordValidation = (values) => {
+  const errors = {};
+
+  if (!values.oldPassword && !values.newPassword && !values.confirmPassword) {
+    errors.allFields = "All fields are required";
+  }
+  if (!values.oldPassword) {
+    errors.identifier = "Old Password Required";
+  }
+
+  if (!values.newPassword) {
+    errors.newPassword = "New Password Required";
+  } else if (values.newPassword.length < 8) {
+    errors.newPassword = "Password must be at least 8 characters long";
+  }
+  if (!values.confirmPassword) {
+    errors.confirmPassword = "Confirm Password Required";
+  } else if (values.newPassword !== values.confirmPassword) {
+    errors.confirmPassword = "Password not matched";
+  }
+  return errors;
+};
