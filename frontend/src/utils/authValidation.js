@@ -60,7 +60,7 @@ export const updatePasswordValidation = (values) => {
     errors.allFields = "All fields are required";
   }
   if (!values.oldPassword) {
-    errors.identifier = "Old Password Required";
+    errors.oldPassword = "Old Password Required";
   }
 
   if (!values.newPassword) {

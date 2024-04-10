@@ -1,7 +1,7 @@
 "use client";
 import Layout from "@/components/auth/AuthComponent";
 import { IoFingerPrint } from "react-icons/io5";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import Button from "@/components/button/Button";
 import Link from "next/link";
 import { MdAlternateEmail } from "react-icons/md";
@@ -10,13 +10,12 @@ import { signInUser } from "@/services/user";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import { signInValidation } from "@/utils/authValidation";
-import { useSelector, useDispatch } from "react-redux";
+import { useDispatch } from "react-redux";
 import { userActions } from "@/store/reducers/userReducer";
 
 const SignInPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [inputs, setInputs] = useState({ identifier: "", password: "" });
-  const [errors, setErrors] = useState({});
   const router = useRouter();
   const dispatch = useDispatch();
 
@@ -38,7 +37,6 @@ const SignInPage = () => {
   const signInSubmitHandler = async (e) => {
     e.preventDefault();
     const validationErrors = signInValidation(inputs);
-    setErrors(validationErrors);
 
     if (Object.keys(validationErrors).length > 0) {
       const errorMessage = Object.values(validationErrors)[0];

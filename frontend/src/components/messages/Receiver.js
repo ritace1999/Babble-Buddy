@@ -2,7 +2,7 @@ import { images } from "@/constants";
 import Image from "next/image";
 import React from "react";
 
-const Receiver = ({ users }) => {
+const Receiver = ({ name }) => {
   return (
     <div
       className="flex items-center gap-2 cursor-pointer
@@ -17,7 +17,7 @@ const Receiver = ({ users }) => {
         }
         className="  rounded-full w-14  "
       />
-      <span className="text-white">John</span>
+      <span className="text-white">{name}</span>
     </div>
   );
 };

@@ -1,4 +1,5 @@
 import { images } from "@/constants";
+import Loading from "@components/loading/Loading";
 import Image from "next/image";
 import Link from "next/link";
 import React from "react";
@@ -10,7 +11,7 @@ const Profile = ({ avatar, name, isLoading }) => {
   return (
     <div className="mt-4 mx-auto">
       {isLoading ? (
-        <span className="loading loading-dots loading-lg text-slate-900 m-auto" />
+        <Loading />
       ) : (
         <Link
           href="/profile"

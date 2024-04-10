@@ -37,15 +37,11 @@ const ChangePassword = ({ onCancel, setChangePasswordDialog }) => {
 
   const handleChangePassword = () => {
     const validationErrors = updatePasswordValidation(inputs);
-
-    // Check if there are any validation errors
     if (Object.keys(validationErrors).length > 0) {
-      // If there are errors, display the first error encountered
-      const errorMessage = Object.values(validationErrors)[0]; // Get the first error message
+      const errorMessage = Object.values(validationErrors)[0];
       toast.error(errorMessage);
       return;
     }
-
     const { confirmPassword, ...formData } = inputs;
     mutateUpdate({ formData, token: userInfo.token });
   };

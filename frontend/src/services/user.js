@@ -164,3 +164,43 @@ export const deleteAvatar = async ({ token }) => {
     }
   }
 };
+
+export const sendMessage = async ({ token, message, userId }) => {
+  try {
+    const config = {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+    };
+    const response = await axiosInstance.post(
+      `/messages/send/${userId}`,
+      message,
+      config
+    );
+    return response.data;
+  } catch (error) {
+    if (error.response && error.response.data.message) {
+      throw new Error(error.response.data.message);
+    } else {
+      throw new Error("Sending message failed. Please try again later.");
+    }
+  }
+};
+export const getMessage = async ({ token, userId }) => {
+  try {
+    const config = {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    };
+    const response = await axiosInstance.get(`/messages/${userId}`, config);
+    return response.data;
+  } catch (error) {
+    if (error.response && error.response.data.message) {
+      throw new Error(error.response.data.message);
+    } else {
+      throw new Error("Getting user messages failed. Please try again later.");
+    }
+  }
+};

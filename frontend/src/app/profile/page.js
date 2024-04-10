@@ -8,7 +8,7 @@ import AvatarComponent from "@/components/profile/AvatarComponent";
 import GenderCheckbox from "@/components/GenderCheckBox";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { getUserProfile, updateUserProfile } from "@/services/user";
-import ErrorMessage from "@/components/ErrorMessage";
+import ErrorMessage from "@components/Error/Error";
 import { BiArrowBack } from "react-icons/bi";
 import { useRouter } from "next/navigation";
 import { useSelector, useDispatch } from "react-redux";
@@ -80,10 +80,6 @@ const page = () => {
 
   const handleChangePasswordDialog = () => {
     setChangePasswordDialog(true);
-  };
-
-  const handlePasswordChange = () => {
-    console.log("password changed");
   };
 
   return (

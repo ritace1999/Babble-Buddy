@@ -1,39 +1,51 @@
-import React from "react";
+import { images } from "@constants";
+import React, { useEffect, useRef } from "react";
+import Image from "next/image";
+import { useSelector } from "react-redux";
 
-const Message = () => {
+const Message = ({ message }) => {
+  const { userInfo } = useSelector((state) => state.user);
+  const { selectedConversation } = useSelector((state) => state.conversation);
+  const fromMe = userInfo?._id === message?.senderId;
+  const formattedTime = new Date(message?.createdAt).toLocaleTimeString(
+    "en-US",
+    {
+      hour: "numeric",
+      minute: "numeric",
+    }
+  );
+
+  const chatClassName = fromMe ? "chat-end" : "chat-start";
+  const avatar = fromMe ? userInfo?.avatar : selectedConversation?.avatar;
+  const bubbleBgColor = fromMe ? "bg-blue-500 text-white" : "";
+  const imageUrl = avatar
+    ? `http://localhost:4000/uploads/${avatar}`
+    : images.Avatar;
+  const messageRef = useRef(null);
+
+  useEffect(() => {
+    // Scroll to the bottom of the chat window
+    if (messageRef.current) {
+      messageRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [message]);
   return (
-    <div className="h-[50%] w-full px-20  py-10">
-      <div className="chat chat-start">
-        <div className="chat-image avatar">
-          <div className="w-10 rounded-full">
-            <img
-              alt="Tailwind CSS chat bubble component"
-              src="https://daisyui.com/images/stock/photo-1534528741775-53994a69daeb.jpg"
-            />
-          </div>
+    <div ref={messageRef} className={`chat ${chatClassName} px-10 py-2`}>
+      <div className="chat-image avatar">
+        <div className="w-10 rounded-full">
+          <Image
+            width={500}
+            height={500}
+            alt="Profile picture"
+            src={imageUrl}
+          />
         </div>
-        <div className="chat-header">
-          Obi-Wan Kenobi
-          <time className="text-xs opacity-50">12:45</time>
-        </div>
-        <div className="chat-bubble">You were the Chosen One!</div>
-        <div className="chat-footer opacity-50">Delivered</div>
       </div>
-      <div className="chat chat-end">
-        <div className="chat-image avatar">
-          <div className="w-10 rounded-full">
-            <img
-              alt="Tailwind CSS chat bubble component"
-              src="https://daisyui.com/images/stock/photo-1534528741775-53994a69daeb.jpg"
-            />
-          </div>
-        </div>
-        <div className="chat-header">
-          Anakin
-          <time className="text-xs opacity-50">12:46</time>
-        </div>
-        <div className="chat-bubble">I hate you!</div>
-        <div className="chat-footer opacity-50">Seen at 12:46</div>
+      <div className={`chat-bubble text-white ${bubbleBgColor}  pb-2  `}>
+        {message.message}
+      </div>
+      <div className="chat-footer opacity-50 text-xs flex gap-1 items-center">
+        {formattedTime}
       </div>
     </div>
   );

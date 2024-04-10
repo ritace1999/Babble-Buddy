@@ -2,11 +2,12 @@ import { useState } from "react";
 import { createPortal } from "react-dom";
 import { HiOutlineCamera } from "react-icons/hi2";
 import toast from "react-hot-toast";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { useMutation } from "@tanstack/react-query";
 import Confirmation from "./Confirmation";
 import CropEasy from "@components/cropImage/CropEasy";
 import { deleteAvatar } from "@services/user";
+import { userActions } from "@store/reducers/userReducer";
 
 const AvatarComponent = ({ avatar, refetch }) => {
   const { userInfo } = useSelector((state) => state.user);
@@ -14,6 +15,7 @@ const AvatarComponent = ({ avatar, refetch }) => {
   const [openCrop, setOpenCrop] = useState(false);
   const [photo, setPhoto] = useState(null);
   const [confirmationModal, setConfirmationModal] = useState(false);
+  const dispatch = useDispatch();
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -25,6 +27,12 @@ const AvatarComponent = ({ avatar, refetch }) => {
       return deleteAvatar({ token });
     },
     onSuccess: (data) => {
+      const updatedData = { ...userInfo, avatar: data.avatar };
+      dispatch(userActions.setUserInfo(updatedData));
+      const existingData = JSON.parse(localStorage.getItem("account")) || {};
+      const mergedData = { ...existingData, ...updatedData };
+      localStorage.setItem("account", JSON.stringify(mergedData));
+      dispatch(userActions.setUserInfo(mergedData));
       toast.success(data.message);
       setConfirmationModal(false);
       refetch();

@@ -6,6 +6,7 @@ import { useSelector } from "react-redux";
 import Logout from "./Logout";
 import Profile from "./Profile";
 import { useState } from "react";
+import ConversationsSkeleton from "@components/skeletons/ConversationsSkeleton";
 
 const Sidebar = ({ avatar, name, isLoading }) => {
   const [searchKeyword, setSearchKeyword] = useState("");
@@ -13,12 +14,10 @@ const Sidebar = ({ avatar, name, isLoading }) => {
   const {
     data: userData,
     isError,
-    refetch,
     isLoading: userIsLoading,
-  } = useQuery({
-    queryFn: () => getConversationsUser(userInfo.token, searchKeyword),
-    queryKey: ["users", searchKeyword],
-  });
+  } = useQuery(["users", searchKeyword], () =>
+    getConversationsUser(userInfo.token, searchKeyword)
+  );
   const searchKeywordHandler = (e) => {
     const { value } = e.target;
     setSearchKeyword(value);
@@ -31,13 +30,23 @@ const Sidebar = ({ avatar, name, isLoading }) => {
         searchKeywordHandler={searchKeywordHandler}
         searchKeyword={searchKeyword}
       />
-      <Conversations
-        userData={userData}
-        searchKeyword={searchKeyword}
-        isError={isError}
-        isLoading={userIsLoading}
-        refetch={refetch}
-      />
+      <div
+        className={`flex flex-col gap-y-2 mx-5 rounded-lg overflow-y-auto py-5 h-[455px] px-5 bg-slate-400 shadow-md bg-clip-padding backdrop-filter backdrop-blur-xl bg-opacity-30 `}
+      >
+        {userData ? (
+          userData.map((user) => (
+            <Conversations
+              key={user._id}
+              user={user}
+              searchKeyword={searchKeyword}
+              isError={isError}
+              isLoading={userIsLoading}
+            />
+          ))
+        ) : (
+          <ConversationsSkeleton />
+        )}
+      </div>
       <Logout />
     </div>
   );
