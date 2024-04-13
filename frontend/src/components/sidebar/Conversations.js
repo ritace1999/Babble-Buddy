@@ -5,10 +5,13 @@ import { FaTrash } from "react-icons/fa";
 import ErrorMessage from "../Error/Error";
 import { images, stables } from "@constants";
 import { setSelectedConversation } from "@store/reducers/conversationReducer";
+import { useSocketContext } from "@context/socketContext";
 
 const Conversations = ({ user, isError, searchKeyword }) => {
   const { selectedConversation } = useSelector((state) => state.conversation);
   const isSelectedConversation = selectedConversation?._id === user._id;
+  const { onlineUsers } = useSocketContext();
+  const isOnline = onlineUsers?.includes(user?._id);
   const dispatch = useDispatch();
   const handleSelectConversation = () => {
     dispatch(setSelectedConversation(user));
@@ -32,7 +35,9 @@ const Conversations = ({ user, isError, searchKeyword }) => {
           }`}
         >
           <div className="flex flex-row items-center justify-start gap-3 w-full ">
-            <div className="avatar online w-12 h-12 ml-3 ">
+            <div
+              className={`avatar w-12 h-12 ml-3 ${isOnline ? "online" : ""}`}
+            >
               <Image
                 src={
                   user.avatar
@@ -49,15 +54,6 @@ const Conversations = ({ user, isError, searchKeyword }) => {
               <span className="text-white">{user.fullName}</span>
             </div>
           </div>
-          <span
-            className=" mx-5 rounded-lg text-white cursor-pointer bg-red-500 p-2 hover:opacity-85"
-            onClick={(e) => {
-              e.stopPropagation();
-              alert("Deleted");
-            }}
-          >
-            <FaTrash />
-          </span>
         </div>
       )}
     </div>

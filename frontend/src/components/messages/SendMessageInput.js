@@ -2,9 +2,12 @@ import React, { useState } from "react";
 import { BsSendFill } from "react-icons/bs";
 import { useMutation } from "@tanstack/react-query";
 import { sendMessage } from "@services/user";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+import { setMessages } from "@store/reducers/conversationReducer";
 
 const SendMessageInput = ({ selectedConversation, refetch }) => {
+  const { messages } = useSelector((state) => state.conversation);
+  const dispatch = useDispatch();
   const [inputs, setInputs] = useState({ message: "" });
   const { userInfo } = useSelector((state) => state.user);
   const { mutate, isLoading } = useMutation(
@@ -14,6 +17,7 @@ const SendMessageInput = ({ selectedConversation, refetch }) => {
         toast.error(error.message);
       },
       onSuccess: (data) => {
+        dispatch(setMessages([...messages, data]));
         refetch();
         setInputs({ message: "" });
       },
@@ -44,7 +48,7 @@ const SendMessageInput = ({ selectedConversation, refetch }) => {
     >
       <input
         type="text"
-        placeholder="Message..."
+        placeholder="Message"
         name="message"
         onChange={handleInputChange}
         value={inputs.message}

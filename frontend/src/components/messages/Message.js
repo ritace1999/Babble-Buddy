@@ -2,6 +2,7 @@ import { images } from "@constants";
 import React, { useEffect, useRef } from "react";
 import Image from "next/image";
 import { useSelector } from "react-redux";
+import useGetRealTimeMessages from "@hooks/useGetRealTimeMessages";
 
 const Message = ({ message }) => {
   const { userInfo } = useSelector((state) => state.user);
@@ -29,6 +30,7 @@ const Message = ({ message }) => {
       messageRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [message]);
+  useGetRealTimeMessages();
   return (
     <div ref={messageRef} className={`chat ${chatClassName} px-10 py-2`}>
       <div className="chat-image avatar">

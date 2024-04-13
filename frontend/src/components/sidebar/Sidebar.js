@@ -37,6 +37,7 @@ const Sidebar = ({ avatar, name, isLoading }) => {
           userData.map((user) => (
             <Conversations
               key={user._id}
+              userData={userData}
               user={user}
               searchKeyword={searchKeyword}
               isError={isError}

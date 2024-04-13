@@ -12,8 +12,6 @@ const ConvoSchema = new Schema(
       {
         type: Schema.Types.ObjectId,
         ref: "Message",
-        required: true,
-        default: [],
       },
     ],
   },

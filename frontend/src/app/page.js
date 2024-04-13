@@ -9,6 +9,7 @@ import { useEffect } from "react";
 
 const page = () => {
   const { userInfo } = useSelector((state) => state.user);
+
   const router = useRouter();
   const {
     data: profileData,

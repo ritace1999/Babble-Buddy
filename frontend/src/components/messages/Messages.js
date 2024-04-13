@@ -1,6 +1,5 @@
 import React from "react";
 import Message from "./Message";
-
 import MessageSkeleton from "@components/skeletons/MessageSkeleton";
 
 const Messages = ({ isLoading, data }) => {

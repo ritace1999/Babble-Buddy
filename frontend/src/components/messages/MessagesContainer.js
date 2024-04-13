@@ -29,9 +29,14 @@ const MessagesContainer = ({ avatar, name, isLoading }) => {
     isLoading: messageIsloading,
     isError,
     refetch,
-  } = useQuery(["messages", selectedConversation?._id], () =>
-    getMessage({ token: userInfo?.token, userId: selectedConversation?._id })
-  );
+  } = useQuery({
+    queryFn: () =>
+      getMessage({ token: userInfo.token, userId: selectedConversation?._id }),
+    queryKey: ["messages", selectedConversation?._id],
+    onSuccess: (data) => {
+      dispatch(setMessages(data));
+    },
+  });
 
   return (
     <>
@@ -43,7 +48,10 @@ const MessagesContainer = ({ avatar, name, isLoading }) => {
             <Welcome avatar={avatar} name={name} />
           ) : (
             <>
-              <Receiver name={selectedConversation?.fullName} />
+              <Receiver
+                name={selectedConversation?.fullName}
+                avatar={selectedConversation?.avatar}
+              />
               <Messages data={data} isLoading={messageIsloading} />
               <SendMessageInput
                 refetch={refetch}

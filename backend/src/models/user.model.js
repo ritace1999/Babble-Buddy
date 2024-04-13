@@ -8,6 +8,7 @@ const UserSchema = new Schema(
     password: { type: String, required: true },
     gender: { type: String, enum: ["Male", "Female"] },
     avatar: { type: String, default: "" },
+    isAdmin: { type: String, default: "User", enum: ["Admin", "User"] },
   },
   {
     timestamps: true,
